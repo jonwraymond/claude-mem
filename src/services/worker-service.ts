@@ -70,6 +70,7 @@ interface ActiveSession {
   claudeSessionId: string; // Real Claude Code session ID
   sdkSessionId: string | null;
   project: string;
+  cwd: string;
   userPrompt: string;
   pendingMessages: WorkerMessage[];
   abortController: AbortController;
@@ -144,7 +145,7 @@ class WorkerService {
    */
   private async handleInit(req: Request, res: Response): Promise<void> {
     const sessionDbId = parseInt(req.params.sessionDbId, 10);
-    const { project, userPrompt } = req.body;
+    const { project, cwd, userPrompt } = req.body;
 
     const correlationId = logger.sessionId(sessionDbId);
     logger.info('WORKER', 'Session init', { correlationId, project });
@@ -166,6 +167,7 @@ class WorkerService {
       claudeSessionId,
       sdkSessionId: null,
       project,
+      cwd,
       userPrompt,
       pendingMessages: [],
       abortController: new AbortController(),
@@ -218,6 +220,7 @@ class WorkerService {
         claudeSessionId: dbSession!.claude_session_id,
         sdkSessionId: null,
         project: dbSession!.project,
+        cwd: dbSession!.project,
         userPrompt: dbSession!.user_prompt,
         pendingMessages: [],
         abortController: new AbortController(),
@@ -279,6 +282,7 @@ class WorkerService {
         claudeSessionId: dbSession!.claude_session_id,
         sdkSessionId: null,
         project: dbSession!.project,
+        cwd: dbSession!.project,
         userPrompt: dbSession!.user_prompt,
         pendingMessages: [],
         abortController: new AbortController(),
@@ -385,7 +389,8 @@ class WorkerService {
           model: MODEL,
           disallowedTools: DISALLOWED_TOOLS,
           abortController: session.abortController,
-          pathToClaudeCodeExecutable: claudePath
+          pathToClaudeCodeExecutable: claudePath,
+          cwd: session.cwd
         }
       });
 
